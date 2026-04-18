@@ -5,6 +5,8 @@ volumes:
     name: qwenpaw-data
   qwenpaw-secrets:
     name: qwenpaw-secrets
+  qwenpaw-nix:
+    name: qwenpaw-nix
 
 services:
   qwenpaw:
@@ -20,3 +22,7 @@ services:
     volumes:
       - qwenpaw-data:/app/working
       - qwenpaw-secrets:/app/working.secret
+      - qwenpaw-nix:/nix
+      - ./nix:/app/nix-config:ro
+    entrypoint: ["/app/nix-config/entrypoint.sh"]
+    command: []
