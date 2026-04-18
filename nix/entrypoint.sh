@@ -23,6 +23,9 @@ if [ ! -f /nix/var/nix/profiles/default/bin/nix-env ] && [ ! -f /nix/store/*nix-
   # 在容器中以 root 用户安装 Nix
   mkdir -p /nix
   
+  # 跳过 root 用户检查 (容器环境必需)
+  export NIX_INSTALLER_SKIP_ROOT_CHECK=1
+  
   # 下载并安装 Nix (容器环境特殊处理)
   export NIX_INSTALLER_NO_MODIFY_PROFILE=1
   sh <(curl -L https://nixos.org/nix/install) --no-daemon --no-channel-add || {
