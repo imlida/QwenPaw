@@ -68,12 +68,29 @@ if [ ! -f /usr/local/bin/nix ]; then
   fi
 fi
 
-# 加载 Nix profile 到 PATH (持久化在 /root/.nix-profile)
-if [ -d /root/.nix-profile/bin ]; then
-  export PATH="/root/.nix-profile/bin:$PATH"
-  echo "[Nix] Profile added to PATH ($(ls /root/.nix-profile/bin/ | wc -l) packages available)"
+# 加载 Nix profile 到 PATH
+# 注意: /root/.nix-profile 是符号链接，需要确保其目标存在
+if [ -L /root/.nix-profile ]; then
+  # 符号链接存在，检查目标是否有效
+  if [ -d /root/.nix-profile/bin ]; then
+    export PATH="/root/.nix-profile/bin:$PATH"
+    echo "[Nix] Profile symlink valid, PATH updated ($(ls /root/.nix-profile/bin/ 2>/dev/null | wc -l) packages)"
+  else
+    echo "[Nix] Profile symlink exists but target missing, will be recreated on first install"
+  fi
+elif [ -d /nix/var/nix/profiles/default/bin ]; then
+  # 符号链接不存在，但 profile 存在，直接使用
+  export PATH="/nix/var/nix/profiles/default/bin:$PATH"
+  echo "[Nix] Profile path added directly to PATH"
 else
   echo "[Nix] No profile found, will be created on first package install"
+fi
+
+# 确保 Nix 环境变量完整
+if [ -f /nix/var/nix/profiles/default/etc/profile.d/nix.sh ]; then
+  # 加载完整的 Nix 环境变量 (包括 NIX_PATH 等)
+  . /nix/var/nix/profiles/default/etc/profile.d/nix.sh 2>/dev/null || true
+  echo "[Nix] Full Nix environment loaded"
 fi
 
 # ============================================
