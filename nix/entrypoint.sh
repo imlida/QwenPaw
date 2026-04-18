@@ -12,6 +12,10 @@ if [ ! -f /etc/nix/nix.conf ]; then
   echo "[Nix] Configuration created for container environment"
 fi
 
+# 确保 /root 目录存在并有正确权限 (持久化 Volume)
+mkdir -p /root
+chmod 700 /root 2>/dev/null || true
+
 # 检查 Nix 是否已安装 (通过检查持久化 Volume 中的文件)
 if [ ! -f /nix/var/nix/profiles/default/bin/nix-env ] && [ ! -f /nix/store/*nix-*/bin/nix ]; then
   echo "[Nix] Installing Nix package manager..."
@@ -61,10 +65,12 @@ if [ ! -f /usr/local/bin/nix ]; then
   fi
 fi
 
-# 加载 Nix profile 到 PATH
+# 加载 Nix profile 到 PATH (持久化在 /root/.nix-profile)
 if [ -d /root/.nix-profile/bin ]; then
   export PATH="/root/.nix-profile/bin:$PATH"
-  echo "[Nix] Profile added to PATH"
+  echo "[Nix] Profile added to PATH ($(ls /root/.nix-profile/bin/ | wc -l) packages available)"
+else
+  echo "[Nix] No profile found, will be created on first package install"
 fi
 
 # ============================================
